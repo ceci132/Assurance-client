@@ -5,6 +5,9 @@
  */
 package com.assuranceclient.Information;
 
+import com.assuranceclient.Oper.OperWindow;
+import com.assuranceclient.customers.CustomersWindow;
+import com.assuranceclient.dto.Customer;
 import com.assuranceclient.dto.SADoc;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -61,7 +65,7 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
         ipExit = new javax.swing.JButton();
         ipDel = new javax.swing.JButton();
         ipNew = new javax.swing.JButton();
-        ipInsert = new javax.swing.JButton();
+        ipView = new javax.swing.JButton();
 
         setTitle("Документи търсене");
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -148,10 +152,10 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel3.add(ipNew, gridBagConstraints);
 
-        ipInsert.setText("Преглед");
-        ipInsert.addActionListener(new java.awt.event.ActionListener() {
+        ipView.setText("Преглед");
+        ipView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ipInsertActionPerformed(evt);
+                ipViewActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -159,7 +163,7 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        jPanel3.add(ipInsert, gridBagConstraints);
+        jPanel3.add(ipView, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -191,7 +195,7 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
 
     private void ipDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipDelActionPerformed
         try {
-            deleteDocument("http://localhost:8080/api/document/" + data.get(itTable.getSelectedRow()).doc_ids);
+            deleteDocument("http://localhost:8080/api/document/" + data.get(itTable.getSelectedRow()).ids);
 
             ipRefreshActionPerformed(null);
         } catch (Exception ex) {
@@ -201,17 +205,19 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_ipDelActionPerformed
 
     private void ipNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipNewActionPerformed
-        com.assuranceclient.Oper.OperWindow ss = new com.assuranceclient.Oper.OperWindow(token, 0, parent);
+        com.assuranceclient.Oper.OperWindow ss = new com.assuranceclient.Oper.OperWindow(token, new SADoc(), parent);
         ss.setVisible(true);
         parent.add(ss);
     }//GEN-LAST:event_ipNewActionPerformed
 
-    private void ipInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipInsertActionPerformed
+    private void ipViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipViewActionPerformed
 
-        com.assuranceclient.Oper.OperWindow ss = new com.assuranceclient.Oper.OperWindow(token, data.get(itTable.getSelectedRow()).doc_ids, parent);
+        SADoc doc = data.get(itTable.getSelectedRow());
+        
+        com.assuranceclient.Oper.OperWindow ss = new com.assuranceclient.Oper.OperWindow(token, doc, parent);
         ss.setVisible(true);
         parent.add(ss);
-    }//GEN-LAST:event_ipInsertActionPerformed
+    }//GEN-LAST:event_ipViewActionPerformed
 
     private void showTable() {
         Vector cols[] = new Vector[colsNames.length];
@@ -221,10 +227,11 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
 
         for (int i = 0; i < data.size(); i++) {
             int j = 0;
-            cols[j++].add(data.get(i).doc_nomer);
-            cols[j++].add(data.get(i).date);
-            cols[j++].add(data.get(i).cli_mname);
-            cols[j++].add(data.get(i).price);
+            cols[j++].add(data.get(i).nomer);
+            cols[j++].add(data.get(i).date_from);
+            cols[j++].add(data.get(i).date_to);
+            cols[j++].add(getCustomerNmaeFromIds(data.get(i).ids_client));
+            cols[j++].add(data.get(i).doc_price);
         }
         DefaultTableModel model = new DefaultTableModel() {
             @Override
@@ -261,6 +268,7 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
     }
 
     public void beginWindow() {
+        initCustomers();
 
         showTable();
     }
@@ -268,21 +276,66 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
     private final String colsNames[]
             = {
                 "Док. номер",
-                "Дата",
+                "Дата от",
+                "Дата до",
                 "Клиент",
                 "Цена",};
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton ipDel;
     private javax.swing.JButton ipExit;
-    private javax.swing.JButton ipInsert;
     private javax.swing.JButton ipNew;
     private javax.swing.JButton ipRefresh;
+    private javax.swing.JButton ipView;
     private javax.swing.JTable itTable;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
+
+    private ArrayList<Customer> dataCustomers = new ArrayList();
+    private String jsonStringCustomers = "";
+
+    private String getCustomerNmaeFromIds(int ids) {
+        for (int i = 0; i < dataCustomers.size(); i++) {
+            if (dataCustomers.get(i).ids == ids) {
+                return dataCustomers.get(i).first_name + " " + dataCustomers.get(i).last_name;
+            }
+        }
+
+        return "";
+    }
+
+    private void initCustomers() {
+
+        try {
+            jsonStringCustomers = fillCombo("http://localhost:8080/api/customers");
+        } catch (Exception ex) {
+            Logger.getLogger(CustomersWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            dataCustomers = objectMapper.readValue(jsonStringCustomers, new TypeReference<ArrayList<Customer>>() {
+            });
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(CustomersWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private String fillCombo(String uri) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(uri))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return response.body();
+    }
 
     private String getDocuments(String uri) throws Exception {
         HttpClient client = HttpClient.newHttpClient();

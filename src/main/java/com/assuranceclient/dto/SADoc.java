@@ -11,95 +11,78 @@ import java.util.Date;
  * @author Цветан Иванов
  */
 public class SADoc {
-    public int doc_ids;
-    public String doc_nomer;
-    public int cli_ids;
-    public String cli_mname;
-    public int tarifa_ids;
-    public String tarifa_mname;
-    public double price;
-    public int vehicle_ids;
-    public String vehicle_mname;
-    public Date date;
+    public int ids;
+    public String nomer;
+    public int ids_client;
+    public int ids_price;
+    public double doc_price;
+    public int ids_vehicle;
+    public Date date_from;
+    public Date date_to;
 
-    public int getDoc_ids() {
-        return doc_ids;
+    public Date getDate_from() {
+        return date_from;
     }
 
-    public void setDoc_ids(int doc_ids) {
-        this.doc_ids = doc_ids;
+    public void setDate_from(Date date_from) {
+        this.date_from = date_from;
     }
 
-    public String getDoc_nomer() {
-        return doc_nomer;
+    public Date getDate_to() {
+        return date_to;
     }
 
-    public void setDoc_nomer(String doc_nomer) {
-        this.doc_nomer = doc_nomer;
+    public void setDate_to(Date date_to) {
+        this.date_to = date_to;
+    }
+    
+    public int getIds() {
+        return ids;
     }
 
-    public int getCli_ids() {
-        return cli_ids;
+    public void setIds(int ids) {
+        this.ids = ids;
     }
 
-    public void setCli_ids(int cli_ids) {
-        this.cli_ids = cli_ids;
+    public String getNomer() {
+        return nomer;
     }
 
-    public String getCli_mname() {
-        return cli_mname;
+    public void setNomer(String nomer) {
+        this.nomer = nomer;
     }
 
-    public void setCli_mname(String cli_mname) {
-        this.cli_mname = cli_mname;
+    public double getDoc_price() {
+        return doc_price;
     }
 
-    public int getTarifa_ids() {
-        return tarifa_ids;
+    public void setDoc_price(double doc_price) {
+        this.doc_price = doc_price;
     }
 
-    public void setTarifa_ids(int tarifa_ids) {
-        this.tarifa_ids = tarifa_ids;
+    public int getIds_client() {
+        return ids_client;
     }
 
-    public String getTarifa_mname() {
-        return tarifa_mname;
+    public void setIds_client(int ids_client) {
+        this.ids_client = ids_client;
     }
 
-    public void setTarifa_mname(String tarifa_mname) {
-        this.tarifa_mname = tarifa_mname;
+    public int getIds_price() {
+        return ids_price;
     }
 
-    public double getPrice() {
-        return price;
+    public void setIds_price(int ids_price) {
+        this.ids_price = ids_price;
+    }
+    
+    public int getIds_vehicle() {
+        return ids_vehicle;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setIds_vehicle(int ids_vehicle) {
+        this.ids_vehicle = ids_vehicle;
     }
 
-    public int getVehicle_ids() {
-        return vehicle_ids;
-    }
-
-    public void setVehicle_ids(int vehicle_ids) {
-        this.vehicle_ids = vehicle_ids;
-    }
-
-    public String getVehicle_mname() {
-        return vehicle_mname;
-    }
-
-    public void setVehicle_mname(String vehicle_mname) {
-        this.vehicle_mname = vehicle_mname;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
     
 }

@@ -20,6 +20,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
@@ -39,7 +41,6 @@ public class OperWindow extends javax.swing.JInternalFrame {
     private String jsonStringCustomers = "";
     private String jsonStringTarifas = "";
     private String jsonStringVehicles = "";
-    private ArrayList<SADoc> data = new ArrayList();
     private ArrayList<Customer> dataCustomers = new ArrayList();
     private ArrayList<Tarifa> dataTarifa = new ArrayList();
     private ArrayList<Vehicle> dataVehicle = new ArrayList();
@@ -58,12 +59,13 @@ public class OperWindow extends javax.swing.JInternalFrame {
         beginWindow();
     }
 
-    public OperWindow(String token, int oldDoc_ids, javax.swing.JFrame parent) {
+    public OperWindow(String token, SADoc oldDoc, javax.swing.JFrame parent) {
         initComponents();
         this.token = token;
-        this.oldDoc_ids = oldDoc_ids;
+        this.oldDoc = oldDoc;
 
         beginWindow();
+        showData();
     }
 
     /**
@@ -92,9 +94,10 @@ public class OperWindow extends javax.swing.JInternalFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         ieNomer = new javax.swing.JTextField();
-        ieDate = new javax.swing.JFormattedTextField();
         jLabel3 = new javax.swing.JLabel();
-        ieCena = new javax.swing.JFormattedTextField();
+        iePrice = new unisoftbg.swing.JTextDoubleField();
+        ieDateFrom = new com.github.lgooddatepicker.components.DatePicker();
+        ieDateTo = new com.github.lgooddatepicker.components.DatePicker();
 
         setTitle("Гражданска Отговорност");
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -165,36 +168,35 @@ public class OperWindow extends javax.swing.JInternalFrame {
         jPanel7.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel6.setText("Клиент");
-        jPanel7.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, -1, 20));
+        jPanel7.add(jLabel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 70, -1, 20));
 
-        jPanel7.add(icKlient, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 60, 260, 20));
+        jPanel7.add(icKlient, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 70, 295, 20));
 
         jLabel7.setText("Автомобил");
-        jPanel7.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 85, -1, 20));
+        jPanel7.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 95, -1, 20));
 
-        jPanel7.add(icVidTrans, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 85, 260, 20));
+        jPanel7.add(icVidTrans, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 95, 295, 20));
 
         jLabel8.setText("Тарифа");
         jLabel8.setToolTipText("");
-        jPanel7.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 110, -1, 20));
+        jPanel7.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, -1, 20));
 
-        jPanel7.add(icTarifa, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 110, 260, 20));
+        jPanel7.add(icTarifa, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 120, 295, 20));
 
         jLabel1.setText("Номер");
         jPanel7.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, 20));
 
         jLabel2.setText("Дата");
         jPanel7.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 35, -1, 20));
-        jPanel7.add(ieNomer, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 10, 160, -1));
-
-        ieDate.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.DateFormatter(java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT))));
-        jPanel7.add(ieDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 35, 80, -1));
+        jPanel7.add(ieNomer, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 10, 175, -1));
 
         jLabel3.setText("Крайна цена");
-        jPanel7.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 135, -1, 20));
+        jPanel7.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 145, -1, 20));
 
-        ieCena.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter()));
-        jPanel7.add(ieCena, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 135, 80, -1));
+        iePrice.setText("jTextDoubleField1");
+        jPanel7.add(iePrice, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 145, 80, -1));
+        jPanel7.add(ieDateFrom, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 35, -1, 25));
+        jPanel7.add(ieDateTo, new org.netbeans.lib.awtextra.AbsoluteConstraints(250, 35, -1, 25));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -219,10 +221,10 @@ public class OperWindow extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_ipExitActionPerformed
 
     private void ipModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipModifyActionPerformed
-        getFromForm(oldDoc);
+        SADoc docToMod = getFromForm();
 
         try {
-            updateDocument("http://localhost:8080/api/document/" + oldDoc.doc_ids, oldDoc);
+            updateDocument("http://localhost:8080/api/document/" + docToMod.ids, docToMod);
 
             JOptionPane.showMessageDialog(this, "Успешна промяна!");
 
@@ -234,12 +236,13 @@ public class OperWindow extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_ipModifyActionPerformed
 
     private void ipInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipInsertActionPerformed
-        getFromForm(oldDoc);
+        SADoc docToAdd = getFromForm();
 
         try {
-            saveDocument("http://localhost:8080/api/document", oldDoc);
 
-            loadDoc();
+            ObjectMapper objectMapper = new ObjectMapper();
+            oldDoc = objectMapper.readValue(saveDocument("http://localhost:8080/api/document", docToAdd), SADoc.class);
+
             showData();
             ipModify.setVisible(true);
             ipPrint.setVisible(true);
@@ -251,6 +254,7 @@ public class OperWindow extends javax.swing.JInternalFrame {
 
     private void ipPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipPrintActionPerformed
         // TODO add your handling code here:
+        new com.assuranceclient.Print.Polica(token, oldDoc);
     }//GEN-LAST:event_ipPrintActionPerformed
 
     private boolean checkForChanges() {
@@ -262,16 +266,21 @@ public class OperWindow extends javax.swing.JInternalFrame {
         return false;
     }
 
-    private void getFromForm(SADoc tmp) {
-        tmp.cli_mname = icKlient.getSelectedItem().toString();
-        tmp.cli_ids = dataCustomers.get(icKlient.getSelectedIndex()).ids;
-        tmp.doc_nomer = ieNomer.getText();
-        tmp.date = (Date) ieDate.getValue();
-        tmp.price = (double) ieCena.getValue();
-        tmp.tarifa_ids = dataTarifa.get(icTarifa.getSelectedIndex()).ids;
-        tmp.tarifa_mname = icTarifa.getSelectedItem().toString();
-        tmp.vehicle_ids = dataVehicle.get(icVidTrans.getSelectedIndex()).ids;
-        tmp.vehicle_mname = icVidTrans.getSelectedItem().toString();
+    private SADoc getFromForm() {
+        SADoc tmp = new SADoc();
+        if (oldDoc_ids != 0) {
+            tmp.ids = oldDoc_ids;
+        }
+
+        tmp.ids_client = dataCustomers.get(icKlient.getSelectedIndex()).ids;
+        tmp.nomer = ieNomer.getText();
+        tmp.date_from = java.sql.Date.valueOf(ieDateFrom.getDate());
+        tmp.date_to = java.sql.Date.valueOf(ieDateTo.getDate());
+        tmp.doc_price = iePrice.getValue();
+        tmp.ids_price = dataTarifa.get(icTarifa.getSelectedIndex()).ids;
+        tmp.ids_vehicle = dataVehicle.get(icVidTrans.getSelectedIndex()).ids;
+
+        return tmp;
     }
 
     private void initCustomers() {
@@ -353,16 +362,15 @@ public class OperWindow extends javax.swing.JInternalFrame {
     }
 
     private void loadDoc() {
-
         try {
-            jsonStringDocuments = getDocumentByIds("http://localhost:8080/api/document" + oldDoc.doc_ids);
+            jsonStringDocuments = getDocumentByIds("http://localhost:8080/api/document" + oldDoc.ids);
         } catch (Exception ex) {
             Logger.getLogger(OperWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            data = objectMapper.readValue(jsonStringDocuments, new TypeReference<ArrayList<SADoc>>() {
+            oldDoc = objectMapper.readValue(jsonStringDocuments, new TypeReference<SADoc>() {
             });
         } catch (JsonProcessingException ex) {
             Logger.getLogger(OperWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -374,13 +382,10 @@ public class OperWindow extends javax.swing.JInternalFrame {
         initVehicles();
         initTarifas();
 
-        if (oldDoc.doc_ids == 0) {
+        if (oldDoc.ids == 0) {
             ipModify.setVisible(false);
             ipPrint.setVisible(false);
-        } else {
-            loadDoc();
         }
-
     }
 
     private int getComboTarifaIndexFromIds(int ids) {
@@ -414,21 +419,27 @@ public class OperWindow extends javax.swing.JInternalFrame {
     }
 
     private void showData() {
-        ieNomer.setText(oldDoc.doc_nomer);
-        ieDate.setValue(oldDoc.date);
-        icKlient.setSelectedIndex(getComboCustomersIndexFromIds(oldDoc.cli_ids));
-        icTarifa.setSelectedIndex(getComboTarifaIndexFromIds(oldDoc.tarifa_ids));
-        icVidTrans.setSelectedIndex(getComboVidTransIndexFromIds(oldDoc.vehicle_ids));
-        ieCena.setValue(oldDoc.price);
+        ieNomer.setText(oldDoc.nomer);
+        ieDateFrom.setDate(convertToLocalDateViaSqlDate(oldDoc.date_from));
+        ieDateTo.setDate(convertToLocalDateViaSqlDate(oldDoc.date_to));
+        icKlient.setSelectedIndex(getComboCustomersIndexFromIds(oldDoc.ids_client));
+        icTarifa.setSelectedIndex(getComboTarifaIndexFromIds(oldDoc.ids_price));
+        icVidTrans.setSelectedIndex(getComboVidTransIndexFromIds(oldDoc.ids_vehicle));
+        iePrice.setValue(oldDoc.doc_price);
+    }
+
+    private LocalDate convertToLocalDateViaSqlDate(Date dateToConvert) {
+        return new java.sql.Date(dateToConvert.getTime()).toLocalDate();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> icKlient;
     private javax.swing.JComboBox<String> icTarifa;
     private javax.swing.JComboBox<String> icVidTrans;
-    private javax.swing.JFormattedTextField ieCena;
-    private javax.swing.JFormattedTextField ieDate;
+    private com.github.lgooddatepicker.components.DatePicker ieDateFrom;
+    private com.github.lgooddatepicker.components.DatePicker ieDateTo;
     private javax.swing.JTextField ieNomer;
+    private unisoftbg.swing.JTextDoubleField iePrice;
     private javax.swing.JButton ipExit;
     private javax.swing.JButton ipInsert;
     private javax.swing.JButton ipModify;
@@ -472,9 +483,9 @@ public class OperWindow extends javax.swing.JInternalFrame {
         return response.body();
     }
 
-    private String saveDocument(String uri, SADoc Document) throws Exception {
+    private String saveDocument(String uri, SADoc doc) throws Exception {
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String json = ow.writeValueAsString(Document);
+        String json = ow.writeValueAsString(doc);
 
         HttpClient client = HttpClient.newHttpClient();
 
