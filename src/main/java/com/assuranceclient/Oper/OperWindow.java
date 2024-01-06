@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -253,8 +254,12 @@ public class OperWindow extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_ipInsertActionPerformed
 
     private void ipPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ipPrintActionPerformed
-        // TODO add your handling code here:
-        new com.assuranceclient.Print.Polica(token, oldDoc);
+        try {
+            // TODO add your handling code here:
+            new com.assuranceclient.Print.Polica(token, oldDoc);
+        } catch (IOException ex) {
+            Logger.getLogger(OperWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_ipPrintActionPerformed
 
     private boolean checkForChanges() {
@@ -428,6 +433,7 @@ public class OperWindow extends javax.swing.JInternalFrame {
         iePrice.setValue(oldDoc.doc_price);
     }
 
+    
     private LocalDate convertToLocalDateViaSqlDate(Date dateToConvert) {
         return new java.sql.Date(dateToConvert.getTime()).toLocalDate();
     }

@@ -16,6 +16,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -219,6 +221,7 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
         parent.add(ss);
     }//GEN-LAST:event_ipViewActionPerformed
 
+    private DateFormat formatter1 = new SimpleDateFormat("dd.MM.yyyy");
     private void showTable() {
         Vector cols[] = new Vector[colsNames.length];
         for (int i = 0; i < cols.length; i++) {
@@ -228,8 +231,8 @@ public class SearchOldDocWindow extends javax.swing.JInternalFrame {
         for (int i = 0; i < data.size(); i++) {
             int j = 0;
             cols[j++].add(data.get(i).nomer);
-            cols[j++].add(data.get(i).date_from);
-            cols[j++].add(data.get(i).date_to);
+            cols[j++].add(formatter1.format(data.get(i).date_from));
+            cols[j++].add(formatter1.format(data.get(i).date_to));
             cols[j++].add(getCustomerNmaeFromIds(data.get(i).ids_client));
             cols[j++].add(data.get(i).doc_price);
         }

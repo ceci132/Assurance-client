@@ -4,10 +4,16 @@
  */
 package com.assuranceclient.login;
 
+import com.assuranceclient.Settings.UsersWindow;
+import com.assuranceclient.dto.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +24,8 @@ import java.util.logging.Logger;
  */
 public class LoginPanelWindow extends javax.swing.JFrame {
 
+    private String jsonStringUsers = "";
+    private ArrayList<User> dataUsers = new ArrayList();
     /**
      * Creates new form loginPanelWindow
      */
@@ -139,12 +147,15 @@ public class LoginPanelWindow extends javax.swing.JFrame {
         try {
             token = get("http://localhost:8080/token");
 
+            initUsers();
+            
             if (!token.equals("")) {
                 com.assuranceclient.mainwindow.MainWindow ss = new com.assuranceclient.mainwindow.MainWindow(token, this);
+                ss.setUserRole(getUserRoleByUserName(ieUserName.getText()));
                 ss.setVisible(true);
-            }
-            
-            dispose();
+                
+                dispose();
+            } 
 
         } catch (Exception ex) {
             Logger.getLogger(LoginPanelWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -180,4 +191,45 @@ public class LoginPanelWindow extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
+
+    private int getUserRoleByUserName(String user_name){
+        for (int i = 0; i < dataUsers.size(); i++) {
+            if (dataUsers.get(i).username.equals(user_name)) {
+                return dataUsers.get(i).user_role;
+            }
+        }
+        return -1;
+    }
+    private void initUsers() {
+
+        try {
+            jsonStringUsers = getUsers("http://localhost:8080/api/users");
+        } catch (Exception ex) {
+            Logger.getLogger(UsersWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            dataUsers = objectMapper.readValue(jsonStringUsers, new TypeReference<ArrayList<User>>() {
+            });
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(UsersWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private String getUsers(String uri) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(uri))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return response.body();
+    }
+
+    
 }
